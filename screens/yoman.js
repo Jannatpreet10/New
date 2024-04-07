@@ -1,35 +1,57 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, ScrollView, Pressable, TextInput, Alert } from "react-native";
+import { FIRESTORE_DB } from "../FirebaseConfig";
+import { collection, addDoc } from "firebase/firestore"; 
+import { useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
-const yoman = ({ navigation }) => {
+const Yoman = () => {
   const [name, setName] = useState("");
-  const [fatherName, setFatherName] = useState(""); // Added state for father's name
-  const [motherName, setMotherName] = useState(""); // Added state for mother's name
+  const [fatherName, setFatherName] = useState("");
+  const [motherName, setMotherName] = useState("");
   const [phone, setPhone] = useState("");
   const [houseNo, setHouseNo] = useState("");
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { email } = route.params;
 
-  const submitDetails = () => {
-    // Validate if all fields are filled
+  const submitDetails = async () => {
     if (name === "" || fatherName === "" || motherName === "" || phone === "" || houseNo === "") {
       Alert.alert("Please fill in all fields");
       return;
     }
-
-    // Pass details to the next screen
-    navigation.navigate('Jannat', {
-      name,
-      fatherName,
-      motherName,
-      phone,
-      houseNo,
-    });
+  
+    try {
+      const docRef = await addDoc(collection(FIRESTORE_DB, "users"), {
+        name,
+        fatherName,
+        motherName,
+        phone,
+        houseNo,
+        email, // Add the email field here
+      });
+      console.log("getting email",email);
+      console.log("Document written with ID: ", docRef.id);
+      Alert.alert("Success", "Details submitted successfully!");
+      // Clear form fields after submission
+      setName("");
+      setFatherName("");
+      setMotherName("");
+      setPhone("");
+      setHouseNo("");
+      // Navigate to the desired screen
+      navigation.navigate('Jannat',{email, name, houseNo });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      Alert.alert("Error", "Failed to submit details. Please try again later.");
+    }
   };
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}></View>
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Add your Details Please</Text>
+        <Text style={styles.sectionTitle}>Add your Details Please----{email}</Text>
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Full name(First and last)</Text>
           <TextInput
@@ -126,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default yoman;
+export default Yoman;

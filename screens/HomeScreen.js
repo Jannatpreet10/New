@@ -28,7 +28,7 @@ const HomeScreen = () => {
       console.log(response);
       
       // Navigate to the 'Kollu' screen after successful sign-in
-      navigation.navigate('Kollu');
+      navigation.navigate('Kollu', {email});
     } catch (error) {
       console.log(error);
       alert('Login failed')

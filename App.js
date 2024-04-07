@@ -15,6 +15,7 @@ import don from './screens/HP'
 import { ModalPortal } from 'react-native-modals';
 import Addaddress from './screens/Addaddress';
 import apple from './screens/apple';
+import kok from './screens/kok';
 export default function App() {
   return (
     <>
@@ -28,6 +29,7 @@ export default function App() {
         <Stack.Screen name="Address" options={{headerShown:false}} component={Addaddress}/>
         <Stack.Screen name="Billa" options={{headerShown:false}} component={don}/>
         <Stack.Screen name='Jannat' options={{headerShown:false}} component={apple}/>
+        <Stack.Screen name='News' options={{headerShown:false}} component={kok}/>
       </Stack.Navigator>
     </NavigationContainer>
     <ModalPortal/>

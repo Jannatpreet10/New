@@ -26,7 +26,7 @@ const DetailsScreen = () => {
       const response = await createUserWithEmailAndPassword(auth, email, password);
       
       // Navigate to the next screen upon successful signup
-      navigation.navigate("Kollu");
+      navigation.navigate("Kollu",{email});
     } catch (error) {
       console.error(error);
       Alert.alert("Signup failed", error.message);
