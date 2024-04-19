@@ -8,8 +8,6 @@ import {
   KeyboardAvoidingView,
   TextInput,
   Pressable,
-  ActivityIndicator,
-  Button,
 } from "react-native";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
@@ -19,25 +17,40 @@ import { FIREBASE_AUTH } from "../FirebaseConfig";
 const HomeScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
   const auth = FIREBASE_AUTH;
   const navigation = useNavigation();
 
   const signIn = async () => {
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
-      console.log(response);
-      
-      // Navigate to the 'Kollu' screen after successful sign-in
-      navigation.navigate('Kollu', {email});
+      if (isAdmin && email === 'admin@example.com' && adminPassword === 'admin123') {
+        setIsAdmin(true);
+        navigation.navigate('Address');
+      } else {
+        const response = await signInWithEmailAndPassword(auth, email, password);
+        console.log(response);
+        navigation.navigate('Billa', { email });
+      }
     } catch (error) {
       console.log(error);
       alert('Login failed')
     }
   };
 
+  const handleEmailChange = (text) => {
+    setEmail(text);
+    // Check if the entered email is the admin's email
+    if (text.toLowerCase() === 'admin@example.com') {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", alignItems: "center" }}>
-      <View style={{ position: 'relative', alignItems:"center" }}>
+      <View style={{ position: 'relative', alignItems: "center" }}>
         <Image
           style={{ width: 350, height: 200, resizeMode: 'cover', marginTop: 10 }}
           source={{
@@ -80,7 +93,7 @@ const HomeScreen = () => {
               color="gray"
             />
             <TextInput
-            value={email}
+              value={email}
               style={{
                 color: "gray",
                 marginVertical: 10,
@@ -88,7 +101,7 @@ const HomeScreen = () => {
                 fontSize: 14,
               }}
               placeholder="Enter your e-mail"
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={(text) => handleEmailChange(text)}
             />
           </View>
         </View>
@@ -111,7 +124,7 @@ const HomeScreen = () => {
               color="gray"
             />
             <TextInput
-            value={password}
+              value={password}
               style={{
                 color: "gray",
                 marginVertical: 10,
@@ -124,6 +137,40 @@ const HomeScreen = () => {
             />
           </View>
         </View>
+        {isAdmin && (
+          <View style={{ marginTop: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 5,
+                backgroundColor: "#D0D0D0",
+                paddingVertical: 5,
+                borderRadius: 5,
+                marginTop: 30,
+              }}
+            >
+              <Feather
+                style={{ marginLeft: 18 }}
+                name="lock"
+                size={24}
+                color="gray"
+              />
+              <TextInput
+                value={adminPassword}
+                style={{
+                  color: "gray",
+                  marginVertical: 10,
+                  width: 300,
+                  fontSize: 14,
+                }}
+                placeholder="Enter admin password"
+                secureTextEntry={true}
+                onChangeText={(text) => setAdminPassword(text)}
+              />
+            </View>
+          </View>
+        )}
         <View
           style={{
             marginTop: 12,

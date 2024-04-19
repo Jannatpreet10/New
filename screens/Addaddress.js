@@ -1,139 +1,102 @@
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  Pressable,
-  TextInput,
-} from "react-native";
-import { useEffect } from "react";
-import { AntDesign } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, FlatList, Pressable, Alert } from 'react-native';
+import { FIRESTORE_DB } from '../FirebaseConfig';
+import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
 
+const Addaddress = () => {
+  const [entries, setEntries] = useState([]);
 
-const Addaddress = ({ navigation, route }) => {
-    const [addresses, setAddresses] = useState([]);
-                      
-    useEffect(() => {
-      // Check if there's a newAddress passed from the previous screen
-      if (route.params?.newAddress) {
-        // Add the new address to the addresses array
-        setAddresses((prevAddresses) => [...prevAddresses, route.params.newAddress]);
-      }
-    }, [route.params?.newAddress]);
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(FIRESTORE_DB, 'vaccinationDetails'));
+      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setEntries(data);
+    } catch (error) {
+      console.error('Error fetching data from Firestore: ', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(FIRESTORE_DB, 'vaccinationDetails', id));
+      setEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+      Alert.alert('Success', 'Entry deleted successfully');
+    } catch (error) {
+      console.error('Error deleting entry: ', error);
+      Alert.alert('Error', 'Failed to delete entry. Please try again later.');
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.entryContainer}>
+      <Text style={styles.label}>Email:</Text>
+      <Text style={styles.text}>{item.email}</Text>
+      <Text style={styles.label}>Address:</Text>
+      <Text style={styles.text}>{item.address}</Text>
+      <Text style={styles.label}>Date:</Text>
+      <Text style={styles.text}>{item.chosenDate}</Text>
+      <Pressable style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
+        <Text style={styles.deleteButtonText}>Delete</Text>
+      </Pressable>
+    </View>
+  );
 
   return (
-    <ScrollView showsHorizontalScrollIndicator={false} style={styles.container}>
-      <View style={styles.header}>
-        <Pressable style={styles.searchBar}>
-          <AntDesign style={styles.searchIcon} name="search1" size={24} color="black" />
-          <TextInput style={styles.searchInput} placeholder="Search amazon.in" />
-        </Pressable>
-        <Text style={styles.addAddressText}>Add an Address</Text>
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Your addresses</Text>
-        <Pressable onPress={() => navigation.navigate("Buy")} style={styles.addAddressButton}>
-          <Text>Add a new address</Text>
-          <Entypo name="arrow-right" size={24} color="black" />
-        </Pressable>
-        <Pressable onPress={()=>navigation.navigate("Billa")}>
-        <View style={styles.addressesContainer}>
-          {addresses.map((address, index) => (
-            <View key={index} style={styles.addressContainer}>
-                <Entypo style={{color:"red"}} name="location" size={24} color="black" />
-              <Text style={styles.addressText}>{address.name}</Text>
-              <View style={{flexDirection:"row", gap:3}}>
-              <Text style={styles.addressText}>{address.phone}</Text>
-              <Text style={styles.addressText}>{address.houseNo}</Text>
-              <View>
-            <Pressable style={{backgroundColor:"#F5F5F5", paddingHorizontal:10, paddingVertical:6, borderRadius:5, borderWidth:0.9, borderColor:"#D0D0D0"}}>
-            <Text>Edit</Text>
-            </Pressable>
-        </View>
-        <View style={{flexDirection:"column"}}>
-            <Pressable style={{backgroundColor:"#F5F5F5", paddingHorizontal:10, paddingVertical:6, borderRadius:5, borderWidth:0.9, borderColor:"#D0D0D0"}}>
-            <Text>Delete</Text>
-            </Pressable>
-        </View>
-
-              </View>
-            </View>
-          ))}
-          
-        </View>
-       
-        </Pressable>
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <Text style={styles.heading}>Vaccination Entries:</Text>
+      {entries.length > 0 ? (
+        <FlatList
+          data={entries}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      ) : (
+        <Text style={styles.text}>No entries available</Text>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-  },
-  header: {
-    backgroundColor: "#00CED1",
-    padding: 10,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 7,
-    gap: 10,
-    backgroundColor: "white",
-    borderRadius: 3,
-    height: 38,
     flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
   },
-  searchIcon: {
-    paddingLeft: 10,
-  },
-  searchInput: {
-    width: "80%",
-    height: "100%",
-  },
-  addAddressText: {
-    marginLeft: 10,
-  },
-  content: {
-    padding: 10,
-  },
-  sectionTitle: {
+  heading: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  entryContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  label: {
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  text: {
     marginBottom: 10,
   },
-  addAddressButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 10,
-    borderColor: "#D0D0D0",
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    paddingVertical: 7,
-    paddingHorizontal: 5,
-  },
-  addressesContainer: {
-    marginTop: 10,
-  },
-  addressContainer: {
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: "#D0D0D0",
+  deleteButton: {
+    backgroundColor: 'red',
     padding: 10,
-    borderRadius: 5,
-    flexDirection:"row",
-    gap:3,
+    borderRadius: 6,
+    marginTop: 10,
   },
-  addressText: {
-    fontSize: 16,
+  deleteButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

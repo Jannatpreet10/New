@@ -35,19 +35,7 @@ const DetailsScreen = () => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", alignItems: "center" }}>
-      <View>
-        <Image
-          style={{
-            width: 350,
-            height: 100,
-            resizeMode: "cover",
-            marginTop: 10,
-          }}
-          source={{
-            uri: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
-          }}
-        />
-      </View>
+      
       <KeyboardAvoidingView>
         <View style={{ alignItems: "center" }}>
           <Text
